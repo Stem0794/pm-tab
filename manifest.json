@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Linear & Everhour Dashboard",
-  "version": "1.0",
+  "version": "1.4",
   "description": "A sleek dashboard for Linear projects and Everhour time tracking.",
   "chrome_url_overrides": {
     "newtab": "newtab.html"
@@ -13,8 +13,8 @@
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "icons": {
-     "16": "icons/icon16.png",
-     "48": "icons/icon48.png",
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   }
 }
