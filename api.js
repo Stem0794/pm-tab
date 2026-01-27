@@ -47,22 +47,40 @@ async function fetchEverhourProjects() {
             if (!result.everhourId) return reject('No Everhour API Key');
 
             try {
-                // Fetch projects with budget details if possible. 
-                // Creating a separate function for detailed dashboard data might be better, 
-                // but let's see if we can reuse or just fetch all here.
-                const response = await fetch('https://api.everhour.com/projects?limit=250', {
-                    headers: { 'X-Api-Key': result.everhourId }
-                });
+                let allProjects = [];
+                let page = 1;
+                let hasMore = true;
+                const limit = 250;
 
-                if (!response.ok) throw new Error('Failed to fetch projects');
-                const data = await response.json();
+                while (hasMore) {
+                    const response = await fetch(`https://api.everhour.com/projects?limit=${limit}&page=${page}`, {
+                        headers: { 'X-Api-Key': result.everhourId }
+                    });
 
-                // Debug: Log first project to check structure
-                if (data.length > 0) console.log('Everhour Project Sample:', data[0]);
+                    if (!response.ok) throw new Error('Failed to fetch projects');
+                    const data = await response.json();
+
+                    if (data.length === 0) {
+                        hasMore = false;
+                    } else {
+                        allProjects = allProjects.concat(data);
+                        if (data.length < limit) {
+                            hasMore = false;
+                        } else {
+                            page++;
+                        }
+                    }
+                }
+
+                // Debug: Log total count
+                console.log(`Fetched ${allProjects.length} Everhour projects total.`);
 
                 // Filter out archived projects (permissive check)
-                // Some APIs use 'status': 'active'/'archived', others use boolean 'archived': true
-                const activeProjects = data.filter(p => p.status !== 'archived' && p.archived !== true);
+                const activeProjects = allProjects.filter(p =>
+                    p.status !== 'archived' &&
+                    p.archived !== true &&
+                    p.status !== 'deleted'
+                );
 
                 resolve(activeProjects);
             } catch (e) {
