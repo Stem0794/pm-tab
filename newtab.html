@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="greeting">
+                <h1 id="greeting-text">Hello, User</h1>
+                <p id="date-text">Loading date...</p>
+            </div>
+            <button id="settings-btn" class="icon-btn" aria-label="Settings">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                        d="M19.4 15C19.7214 14.5028 20.3204 14.246 20.8988 14.3541C21.7825 14.5192 22.345 15.3852 22.1284 16.2505C21.611 18.3182 20.2798 20.1259 18.4721 21.3705C17.7479 21.8692 16.7645 21.6883 16.2778 20.9572C15.9686 20.4925 15.424 20.2312 14.8653 20.3015C13.9189 20.4206 12.9649 20.481 12 20.481C11.0351 20.481 10.0811 20.4206 9.13467 20.3015C8.57597 20.2312 8.03138 20.4925 7.72225 20.9572C7.23547 21.6883 6.25209 21.8692 5.52787 21.3705C3.72018 20.1259 2.389 18.3182 1.87157 16.2505C1.65495 15.3852 2.21752 14.5192 3.10123 14.3541C3.67957 14.246 4.27856 14.5028 4.6 15M19.4 9C19.7214 9.49725 20.3204 9.75402 20.8988 9.64593C21.7825 9.48083 22.345 8.6148 22.1284 7.74952C21.611 5.68185 20.2798 3.87413 18.4721 2.62945C17.7479 2.13076 16.7645 2.3117 16.2778 3.04278C15.9686 3.50746 15.424 3.76878 14.8653 3.6985C13.9189 3.57945 12.9649 3.51897 12 3.51897C11.0351 3.51897 10.0811 3.57945 9.13467 3.6985C8.57597 3.76878 8.03138 3.50746 7.72225 3.04278C7.23547 2.3117 6.25209 2.13076 5.52787 2.62945C3.72018 3.87413 2.389 5.68185 1.87157 7.74952C1.65495 8.6148 2.21752 9.48083 3.10123 9.64593C3.67957 9.75402 4.27856 9.49725 4.6 9"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+        </header>
+
+        <main id="dashboard" class="dashboard-grid hidden">
+            <!-- Linear Section -->
+            <section class="card glass">
+                <div class="card-header">
+                    <h2>Linear Projects</h2>
+                    <span class="status-dot linear-dot"></span>
+                </div>
+                <div class="card-content">
+                    <div class="chart-container">
+                        <canvas id="linearChart"></canvas>
+                    </div>
+                    <div id="linear-stats" class="stats-container">
+                        Loading Linear data...
+                    </div>
+                </div>
+            </section>
+
+
+
+            <!-- Cycle & Budget Section (Full Width or Grid) -->
+            <section class="card glass span-2">
+                <div class="card-header">
+                    <h2>Active Cycle</h2>
+                    <span class="status-dot linear-dot"></span>
+                </div>
+                <div id="cycle-container" class="cycle-container">
+                    Loading Cycle...
+                </div>
+            </section>
+
+            <section class="card glass span-2">
+                <div class="card-header">
+                    <h2>Project Budgets</h2>
+                    <span class="status-dot everhour-dot"></span>
+                </div>
+                <div class="card-content scrollable">
+                    <table id="budget-table" class="budget-table">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Consumed</th>
+                                <th>Budget</th>
+                                <th>% Used</th>
+                            </tr>
+                        </thead>
+                        <tbody id="budget-list">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <!-- Setup / Settings Modal -->
+        <div id="settings-modal" class="modal">
+            <div class="modal-content glass">
+                <span id="close-settings" class="close">&times;</span>
+                <h2>Setup Configuration</h2>
+                <div class="input-group">
+                    <label for="linear-api">Linear API Key</label>
+                    <input type="password" id="linear-api" placeholder="lin_api_...">
+                </div>
+                <div class="input-group">
+                    <label for="everhour-api">Everhour API Key</label>
+                    <input type="password" id="everhour-api" placeholder="ev_api_...">
+                </div>
+
+                <div class="project-sections">
+                    <div class="project-group">
+                        <h3>Linear Projects</h3>
+                        <input type="text" id="linear-search" class="search-input" placeholder="Search projects...">
+                        <div id="linear-projects-list" class="projects-list">
+                            <p class="small-text">Save API key to load projects...</p>
+                        </div>
+                    </div>
+                    <div class="project-group">
+                        <h3>Everhour Projects</h3>
+                        <input type="text" id="everhour-search" class="search-input" placeholder="Search projects...">
+                        <div id="everhour-projects-list" class="projects-list">
+                            <p class="small-text">Save API key to load projects...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="save-settings" class="primary-btn">Save Configuration</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="libs/chart.min.js"></script>
+    <script src="api.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

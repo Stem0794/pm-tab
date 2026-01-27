@@ -1,0 +1,509 @@
+:root {
+    --bg-color: #0f172a;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-linear: #5e6ad2;
+    --accent-everhour: #22c55e;
+    --primary-btn: #38bdf8;
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(94, 106, 210, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(34, 197, 94, 0.15) 0px, transparent 50%);
+}
+
+.container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.greeting h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #fff, #94a3b8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+#date-text {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.icon-btn:hover {
+    color: var(--text-primary);
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 2rem;
+}
+
+.dashboard-grid.hidden {
+    display: none;
+}
+
+/* Cards & Glassmorphism */
+.glass {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.card {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.card-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.linear-dot {
+    background-color: var(--accent-linear);
+    box-shadow: 0 0 8px var(--accent-linear);
+}
+
+.everhour-dot {
+    background-color: var(--accent-everhour);
+    box-shadow: 0 0 8px var(--accent-everhour);
+}
+
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+    overflow: hidden;
+    /* Prevent spillover */
+}
+
+.chart-container {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    min-height: 0;
+    /* Crucial for flex child scrolling/resizing issues */
+}
+
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    /* Flex when active */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: #1e293b;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    border: 1px solid var(--glass-border);
+}
+
+.close {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.modal-content h2 {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.input-group {
+    margin-bottom: 1.5rem;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+    border-color: var(--primary-btn);
+}
+
+.primary-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--primary-btn);
+    border: none;
+    border-radius: 8px;
+    color: #0f172a;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.primary-btn:hover {
+    opacity: 0.9;
+}
+
+/* Project Filtering UI */
+.project-sections {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.project-group {
+    flex: 1;
+}
+
+.project-group h3 {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.85rem;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: var(--primary-btn);
+}
+
+.projects-list {
+    background: rgba(15, 23, 42, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    height: 150px;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.project-item {
+    display: flex;
+    align-items: center;
+    padding: 0.3rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.project-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.project-item input {
+    margin-right: 0.5rem;
+    width: auto;
+    /* Reset global input width */
+}
+
+.small-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+/* Advanced Metrics */
+.span-2 {
+    grid-column: span 1;
+    /* Default to 1 on small screens */
+}
+
+@media (min-width: 1000px) {
+    .span-2 {
+        grid-column: span 2;
+    }
+}
+
+/* Budget Table */
+.scrollable {
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.budget-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.budget-table th {
+    text-align: left;
+    padding: 0.75rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.budget-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.budget-bar-container {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.budget-bar {
+    height: 100%;
+    background: var(--accent-everhour);
+    /* Green */
+    border-radius: 3px;
+}
+
+.budget-bar.warning {
+    background: #f59e0b;
+}
+
+.budget-bar.danger {
+    background: #ef4444;
+}
+
+/* Cycle Widget */
+.cycle-container {
+    padding: 1rem;
+}
+
+.cycle-progress-bar {
+    position: relative;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    margin: 1.5rem 0;
+    overflow: hidden;
+}
+
+.cycle-progress-fill {
+    height: 100%;
+    background: var(--accent-linear);
+    border-radius: 6px;
+    transition: width 0.5s ease-out;
+}
+
+.cycle-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.cycle-meta h3 {
+    margin-bottom: 0.25rem;
+}
+
+/* Linear Graph Polish */
+.linear-cycle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0 0.5rem;
+}
+
+.cycle-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.cycle-status-badge {
+    background: #27272a;
+    color: #a1a1aa;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.cycle-meta-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.accent-text {
+    color: #f8fafc;
+    font-weight: 600;
+}
+
+.linear-graph-layout {
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    /* Graph gets remaining space, Legend gets 200px */
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.graph-wrapper {
+    height: 200px;
+    width: 100%;
+}
+
+.linear-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    padding-left: 1.5rem;
+}
+
+.legend-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.legend-item .label {
+    flex: 1;
+}
+
+.legend-item .value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.legend-item .percentage {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    min-width: 3ch;
+    text-align: right;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+    /* Square-ish dots like Linear? Or rounded. Linear uses squares usually for issue types, circles for statuses. */
+    border-radius: 50%;
+}
+
+.scope-dot {
+    background: #52525b;
+}
+
+.started-dot {
+    background: #fbbf24;
+}
+
+.completed-dot {
+    background: #60a5fa;
+}
+
+@media (max-width: 768px) {
+    .linear-graph-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .linear-legend {
+        flex-direction: row;
+        border-left: none;
+        padding-left: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        justify-content: space-between;
+    }
+
+    .legend-item {
+        display: flex;
+    }
+}

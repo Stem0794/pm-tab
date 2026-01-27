@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard BDD Tests</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #0f172a;
+            color: #fff;
+            padding: 2rem;
+        }
+
+        .pass {
+            color: #4ade80;
+        }
+
+        .fail {
+            color: #ef4444;
+        }
+
+        .suite {
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+            border-left: 2px solid #334155;
+        }
+
+        h3 {
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>BDD Test Results</h1>
+    <div id="results"></div>
+
+    <!-- Mocks -->
+    <script>
+        // Mock chrome.storage.local
+        window.chrome = {
+            storage: {
+                local: {
+                    data: {},
+                    get: function (keys, callback) {
+                        const result = {};
+                        if (Array.isArray(keys)) {
+                            keys.forEach(k => result[k] = this.data[k]);
+                        }
+                        callback(result);
+                    },
+                    set: function (items, callback) {
+                        Object.assign(this.data, items);
+                        if (callback) callback();
+                    }
+                }
+            }
+        };
+
+        // Mock fetch
+        window.originalFetch = window.fetch;
+        window.fetchMocks = {};
+        window.fetch = async function (url, options) {
+            // Simple router for mocks
+            if (window.fetchMocks[url]) {
+                const mock = window.fetchMocks[url];
+                if (typeof mock === 'function') return mock(url, options);
+                return {
+                    ok: true,
+                    json: async () => mock
+                };
+            }
+            console.warn('Unmocked fetch:', url);
+            return Promise.resolve({ ok: false, status: 404 });
+        };
+    </script>
+
+    <!-- App Scripts being tested -->
+    <script src="../api.js"></script>
+
+    <!-- Test Framework -->
+    <script>
+        const results = document.getElementById('results');
+
+        function describe(name, fn) {
+            const div = document.createElement('div');
+            div.className = 'suite';
+            div.innerHTML = `<h3>${name}</h3>`;
+            results.appendChild(div);
+            window.currentSuite = div;
+            fn();
+        }
+
+        async function it(name, fn) {
+            const el = document.createElement('div');
+            try {
+                await fn();
+                el.className = 'pass';
+                el.textContent = `✓ ${name}`;
+            } catch (e) {
+                el.className = 'fail';
+                el.textContent = `✗ ${name}: ${e.message}`;
+                console.error(e);
+            }
+            window.currentSuite.appendChild(el);
+        }
+
+        function expect(actual) {
+            return {
+                toBe: (expected) => {
+                    if (actual !== expected) throw new Error(`Expected ${expected} but got ${actual}`);
+                },
+                toEqual: (expected) => {
+                    const strActual = JSON.stringify(actual);
+                    const strExpected = JSON.stringify(expected);
+                    if (strActual !== strExpected) throw new Error(`Expected ${strExpected} but got ${strActual}`);
+                },
+                toBeTruthy: () => {
+                    if (!actual) throw new Error(`Expected truthy but got ${actual}`);
+                },
+                toBeGreaterThan: (n) => {
+                    if (!(actual > n)) throw new Error(`Expected > ${n} but got ${actual}`);
+                }
+            };
+        }
+    </script>
+
+    <!-- Test Specs -->
+    <script src="bdd_specs.js"></script>
+</body>
+
+</html>
