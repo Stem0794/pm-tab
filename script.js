@@ -71,17 +71,80 @@ function setupEventListeners() {
         });
     });
 
-    // Refresh projects button or logic? For now, we load on open if key is there.
-    // Maybe verify key change? For simplicity, we assume hitting "Save" updates everything.
-    // If they change key, they might need to re-open settings or we should detect blur?
-    // Let's add a blur listener to API inputs to fetch projects
-    document.getElementById('linear-api').addEventListener('blur', () => {
-        // Temporarily save to local to allow fetch to work or pass key directly? 
-        // Our api.js uses storage. let's set it if changed?
-        // Better: update logic in future. For now, rely on existing key or user pressing save once.
-        // Actually, without saving the new key, fetchProjects won't work if we use storage.
-        // Let's just rely on the user having a valid key saved or re-opening.
+    // Linear Inbox Project Filter
+    document.getElementById('linear-project-filter').addEventListener('change', (e) => {
+        if (window.fetchLinearData) {
+            window.fetchLinearData(e.target.value);
+        }
     });
+}
+
+// Global function to update the project filter dropdown in the dashboard
+window.updateLinearProjectFilter = function (projects) {
+    const filter = document.getElementById('linear-project-filter');
+    if (!filter) return;
+
+    // Preserve current selection if any
+    const currentVal = filter.value;
+
+    // Clear except "all"
+    filter.innerHTML = '<option value="all">All Projects</option>';
+
+    projects.forEach(([id, name]) => {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = name;
+        filter.appendChild(option);
+    });
+
+    // Restore selection if it still exists
+    if (Array.from(filter.options).some(opt => opt.value === currentVal)) {
+        filter.value = currentVal;
+    }
+};
+
+window.renderLinearNotifications = function (notifications) {
+    const list = document.getElementById('linear-notifications-list');
+    if (!list) return;
+
+    if (notifications.length === 0) {
+        list.innerHTML = '<p class="small-text" style="padding: 2rem;">Zero notifications found matching your filter.</p>';
+        return;
+    }
+
+    list.innerHTML = '';
+    notifications.forEach(n => {
+        const item = document.createElement('a');
+        item.href = n.issueUrl || '#';
+        item.target = '_blank';
+        item.className = `notification-item ${!n.readAt ? 'unread' : ''}`;
+
+        const date = new Date(n.createdAt);
+        const timeStr = timeAgo(date);
+
+        item.innerHTML = `
+            <div class="notification-header">
+                <span class="notification-actor">${!n.readAt ? '<span class="unread-dot"></span>' : ''}${n.actor}</span>
+                <span class="notification-time">${timeStr}</span>
+            </div>
+            <div class="notification-title" title="${n.issueTitle}">${n.issueTitle}</div>
+            <div class="notification-meta">${n.projectName || n.teamKey || 'Inbox'} • ${n.issueId || ''}</div>
+        `;
+        list.appendChild(item);
+    });
+};
+
+function timeAgo(date) {
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return minutes + 'm ago';
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + 'h ago';
+    const days = Math.floor(hours / 24);
+    if (days < 7) return days + 'd ago';
+    return date.toLocaleDateString();
 }
 
 async function loadLinearProjectsUI() {
@@ -183,7 +246,6 @@ function loadDashboard() {
     if (window.fetchLinearData) window.fetchLinearData();
 
     if (window.loadBudgets) window.loadBudgets();
-    if (window.loadCycle) window.loadCycle();
 }
 
 window.loadBudgets = async function () {
@@ -238,14 +300,15 @@ window.loadBudgets = async function () {
                 let budgetDisplay = '';
 
                 if (budgetType === 'money') {
-                    // Cents to currency (assuming USD/Euro default or just formatted number)
-                    // If rate provided, maybe we can deduce currency, but let's just use standard number format
-                    // Divide by 100 for cents
-                    const spentVal = (progress / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-                    const budgetVal = (budgetTotal / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-                    spentDisplay = `${spentVal}`; // Could add currency symbol if known
-                    budgetDisplay = `${budgetVal}`;
-                    // Add a hint somewhere it's money? Or just number is fine. Used the mock style.
+                    // Cents to Euro currency formatting
+                    const euroFormatter = new Intl.NumberFormat('de-DE', {
+                        style: 'currency',
+                        currency: 'EUR',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                    spentDisplay = euroFormatter.format(progress / 100);
+                    budgetDisplay = euroFormatter.format(budgetTotal / 100);
                 } else {
                     // Time (seconds) => Hours
                     spentDisplay = (progress / 3600).toFixed(0) + 'h';

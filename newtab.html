@@ -31,12 +31,12 @@
             <!-- Linear Section -->
             <section class="card glass">
                 <div class="card-header">
-                    <h2>Linear Projects</h2>
-                    <span class="status-dot linear-dot"></span>
+                    <h2>Linear Inbox</h2>
                 </div>
                 <div class="card-content">
-                    <div class="chart-container">
-                        <canvas id="linearChart"></canvas>
+                    <div id="linear-notifications-list" class="notifications-list scrollable">
+                        <!-- Populated by JS -->
+                        <p class="small-text">Loading notifications...</p>
                     </div>
                     <div id="linear-stats" class="stats-container">
                         Loading Linear data...
@@ -44,20 +44,7 @@
                 </div>
             </section>
 
-
-
-            <!-- Cycle & Budget Section (Full Width or Grid) -->
-            <section class="card glass span-2">
-                <div class="card-header">
-                    <h2>Active Cycle</h2>
-                    <span class="status-dot linear-dot"></span>
-                </div>
-                <div id="cycle-container" class="cycle-container">
-                    Loading Cycle...
-                </div>
-            </section>
-
-            <section class="card glass span-2">
+            <section class="card glass">
                 <div class="card-header">
                     <h2>Project Budgets</h2>
                     <span class="status-dot everhour-dot"></span>
@@ -78,6 +65,7 @@
                     </table>
                 </div>
             </section>
+
         </main>
 
         <!-- Setup / Settings Modal -->

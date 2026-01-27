@@ -358,35 +358,39 @@ function processBurnupData(issues, startDateStr, endDateStr) {
     };
 }
 
-window.fetchLinearData = async function () {
+window.fetchLinearData = async function (projectId = 'all') {
     const statsContainer = document.getElementById('linear-stats');
-    chrome.storage.local.get(['linearId', 'linearProjects'], async (result) => {
+    chrome.storage.local.get(['linearId'], async (result) => {
         if (!result.linearId) return;
 
-        statsContainer.innerHTML = '<p class="loading">Syncing Linear...</p>';
+        statsContainer.innerHTML = '<p class="loading">Syncing Inbox...</p>';
 
         try {
-            // If filter exists, valid projects are in result.linearProjects (array of IDs)
-            // Fix: Directly insert the project filter property, do not wrap in "filter: {}"
-            const projectFilter = result.linearProjects && result.linearProjects.length > 0
-                ? `project: { id: { in: ${JSON.stringify(result.linearProjects)} } }`
-                : '';
-
             const query = `
             query {
-                viewer {
-                    assignedIssues(filter: { 
-                        state: { type: { in: ["started", "unstarted", "completed", "backlog"] } } 
-                        ${projectFilter ? ',' + projectFilter : ''}
-                    }) {
-                        nodes {
-                            state {
-                                name
-                                type
-                            }
-                            project {
+                notifications(first: 30) {
+                    nodes {
+                        id
+                        type
+                        readAt
+                        createdAt
+                        actor {
+                            name
+                            avatarUrl
+                        }
+                        ... on IssueNotification {
+                            issue {
                                 id
-                                name
+                                identifier
+                                title
+                                url
+                                project {
+                                    id
+                                    name
+                                }
+                                team {
+                                    key
+                                }
                             }
                         }
                     }
@@ -408,27 +412,41 @@ window.fetchLinearData = async function () {
                 throw new Error(data.errors[0].message);
             }
 
-            const issues = data.data.viewer.assignedIssues.nodes;
+            const notifications = data.data.notifications.nodes;
 
-            // Validate client-side if needed (Graphql filter above handles it mostly)
-            // But let's be safe if user unselected all, we might show all? No, logic above: if list empty, show all.
+            // Re-map for easier filtering/access
+            const processedNotifications = notifications.map(n => ({
+                id: n.id,
+                type: n.type,
+                readAt: n.readAt,
+                createdAt: n.createdAt,
+                actor: n.actor?.name || 'Linear',
+                issueTitle: n.issue?.title || 'Unknown Issue',
+                issueId: n.issue?.identifier,
+                issueUrl: n.issue?.url,
+                projectId: n.issue?.project?.id,
+                projectName: n.issue?.project?.name,
+                teamKey: n.issue?.team?.key
+            }));
 
-            const counts = { 'todo': 0, 'inprogress': 0, 'done': 0, 'backlog': 0 };
+            // Update UI
+            if (window.renderLinearNotifications) {
+                window.renderLinearNotifications(processedNotifications);
+            }
 
-            issues.forEach(issue => {
-                const type = issue.state.type;
-                if (type === 'unstarted') counts.todo++;
-                else if (type === 'started') counts.inprogress++;
-                else if (type === 'completed') counts.done++;
-                else if (type === 'backlog') counts.backlog++;
-            });
-
-            renderLinearChart([counts.todo, counts.inprogress, counts.done, counts.backlog]);
-            statsContainer.innerHTML = `<p>${issues.length} Issues ${result.linearProjects?.length ? '(Filtered)' : ''}</p>`;
+            const unreadCount = processedNotifications.filter(n => !n.readAt).length;
+            statsContainer.innerHTML = `<p>${unreadCount} Unread • Showing ${processedNotifications.length}</p>`;
+            // Populate filter if needed
+            if (window.updateLinearProjectFilter) {
+                // The 'projects' map is no longer collected as filtering is removed.
+                // If this function is still needed, it would require re-collecting projects
+                // or passing an empty array if no filter is desired.
+                // For now, removing the call as per the instruction's implied removal of filtering.
+            }
 
         } catch (error) {
             console.error(error);
-            statsContainer.innerHTML = `<p style="color: #ef4444; font-size: 0.8rem;">Linear Error: ${error.message}</p>`;
+            statsContainer.innerHTML = `<p style="color: #ef4444; font-size: 0.8rem;">Inbox Error: ${error.message}</p>`;
         }
     });
 };
@@ -437,51 +455,9 @@ window.fetchLinearData = async function () {
 
 
 
+// Chart rendering removed as we are using a list now
 function renderLinearChart(data) {
-    const ctx = document.getElementById('linearChart').getContext('2d');
-
-    if (window.linearChartInstance) {
-        window.linearChartInstance.destroy();
-    }
-
-    window.linearChartInstance = new Chart(ctx, {
-        type: 'bar', // Switch to Bar
-        data: {
-            labels: ['Todo', 'In Progress', 'Done', 'Backlog'],
-            datasets: [{
-                label: 'Issues', // Required for bar
-                data: data,
-                backgroundColor: ['#e2e8f0', '#f59e0b', '#5e6ad2', '#94a3b8'],
-                borderRadius: 4,
-                barThickness: 24,
-            }]
-        },
-        options: {
-            indexAxis: 'y', // Horizontal bars
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }, // Hide legend for cleaner look
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleColor: '#fff',
-                    bodyColor: '#ccc',
-                    borderColor: 'rgba(255,255,255,0.1)',
-                    borderWidth: 1
-                }
-            },
-            scales: {
-                x: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { color: '#94a3b8' }
-                },
-                y: {
-                    grid: { display: false },
-                    ticks: { color: '#f8fafc', font: { weight: 500 } }
-                }
-            }
-        }
-    });
+    console.log("Legacy chart rendering suppressed.");
 }
 
 // Expose these for script.js
