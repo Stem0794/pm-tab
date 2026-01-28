@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Linear & Everhour Dashboard",
-  "version": "1.4",
+  "version": "1.4.1",
   "description": "A sleek dashboard for Linear projects and Everhour time tracking.",
   "chrome_url_overrides": {
     "newtab": "newtab.html"

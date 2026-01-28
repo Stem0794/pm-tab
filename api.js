@@ -6,31 +6,49 @@ async function fetchLinearProjects() {
         chrome.storage.local.get(['linearId'], async (result) => {
             if (!result.linearId) return reject('No Linear API Key');
 
-            const query = `
-            query {
-                projects(first: 250, filter: { state: { in: ["started", "planned", "paused"] } }) {
-                    nodes {
-                        id
-                        name
-                        state
-                    }
-                }
-            }`;
+            let allProjects = [];
+            let hasNextPage = true;
+            let after = null;
 
             try {
-                const response = await fetch('https://api.linear.app/graphql', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': result.linearId
-                    },
-                    body: JSON.stringify({ query })
-                });
+                while (hasNextPage) {
+                    const query = `
+                    query($after: String) {
+                        projects(first: 250, after: $after, filter: { state: { in: ["started", "planned", "paused"] } }) {
+                            nodes {
+                                id
+                                name
+                                state
+                            }
+                            pageInfo {
+                                hasNextPage
+                                endCursor
+                            }
+                        }
+                    }`;
 
-                const data = await response.json();
-                if (data.errors) throw new Error(data.errors[0].message);
+                    const response = await fetch('https://api.linear.app/graphql', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': result.linearId
+                        },
+                        body: JSON.stringify({
+                            query,
+                            variables: { after }
+                        })
+                    });
 
-                resolve(data.data.projects.nodes);
+                    const data = await response.json();
+                    if (data.errors) throw new Error(data.errors[0].message);
+
+                    const projectsData = data.data.projects;
+                    allProjects = allProjects.concat(projectsData.nodes);
+                    hasNextPage = projectsData.pageInfo.hasNextPage;
+                    after = projectsData.pageInfo.endCursor;
+                }
+
+                resolve(allProjects);
             } catch (e) {
                 reject(e);
             }
